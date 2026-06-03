@@ -8,6 +8,7 @@ class CachedWordInflector implements WordInflector
 {
     /** @var WordInflector */
     private $wordInflector;
+
     /** @var string[] */
     private $cache = [];
 
