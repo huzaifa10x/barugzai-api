@@ -3,6 +3,7 @@
 use App\Http\Controllers\MetaDataController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 
@@ -25,6 +26,10 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/link-storage', function () {
+    Artisan::call('storage:link');
+    return 'Storage link created!';
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -37,7 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/meta-data/update/{id}', [MetaDataController::class, 'update'])->name('meta-data.update');
     Route::post('/meta-data/delete/{id}', [MetaDataController::class, 'destroy']);
     Route::get('/meta-data', [MetaDataController::class, 'index'])->name('meta-data');
-    
+
     Route::get('/contact/create', [ContactController::class, 'create']);
     Route::post('/contact/store', [ContactController::class, 'store']);
     Route::get('/contact/edit/{id}', [ContactController::class, 'edit'])->name('contact.edit');
@@ -45,7 +50,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('contact.delete');
     Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 });
-
-
 
 require __DIR__ . '/auth.php';
