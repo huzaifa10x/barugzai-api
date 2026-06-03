@@ -3,7 +3,7 @@
 /*
  * This file is part of Psy Shell.
  *
- * (c) 2012-2026 Justin Hileman
+ * (c) 2012-2023 Justin Hileman
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -19,10 +19,9 @@ namespace Psy\Reflection;
 class ReflectionConstant implements \Reflector
 {
     public $name;
-    /** @var mixed */
     private $value;
 
-    private const MAGIC_CONSTANTS = [
+    private static $magicConstants = [
         '__LINE__',
         '__FILE__',
         '__DIR__',
@@ -72,13 +71,11 @@ class ReflectionConstant implements \Reflector
         }
 
         echo $str."\n";
-
-        return null;
     }
 
     public static function isMagicConstant($name)
     {
-        return \in_array($name, self::MAGIC_CONSTANTS);
+        return \in_array($name, self::$magicConstants);
     }
 
     /**

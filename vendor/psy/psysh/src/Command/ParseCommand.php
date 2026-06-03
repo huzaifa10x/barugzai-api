@@ -3,7 +3,7 @@
 /*
  * This file is part of Psy Shell.
  *
- * (c) 2012-2026 Justin Hileman
+ * (c) 2012-2023 Justin Hileman
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -11,9 +11,7 @@
 
 namespace Psy\Command;
 
-use PhpParser\Error as PhpParserError;
 use PhpParser\Node;
-use PhpParser\Parser;
 use Psy\Context;
 use Psy\ContextAware;
 use Psy\Input\CodeArgument;
@@ -30,9 +28,15 @@ use Symfony\Component\VarDumper\Caster\Caster;
  */
 class ParseCommand extends Command implements ContextAware, PresenterAware
 {
-    protected Context $context;
-    private Presenter $presenter;
-    private Parser $parser;
+    /**
+     * Context instance (for ContextAware interface).
+     *
+     * @var Context
+     */
+    protected $context;
+
+    private $presenter;
+    private $parser;
 
     /**
      * {@inheritdoc}
@@ -81,7 +85,7 @@ class ParseCommand extends Command implements ContextAware, PresenterAware
     /**
      * {@inheritdoc}
      */
-    protected function configure(): void
+    protected function configure()
     {
         $this
             ->setName('parse')
@@ -112,31 +116,11 @@ HELP
         $code = $input->getArgument('code');
         $depth = $input->getOption('depth');
 
-        if (!\preg_match('/^\s*<\\?/', $code)) {
-            $code = '<?php '.$code;
-        }
-
-        try {
-            $nodes = $this->parser->parse($code);
-        } catch (PhpParserError $e) {
-            if ($this->parseErrorIsEOF($e)) {
-                $nodes = $this->parser->parse($code.';');
-            } else {
-                throw $e;
-            }
-        }
-
-        $this->shellOutput($output)->page($this->presenter->present($nodes, $depth, Presenter::RAW), OutputInterface::OUTPUT_RAW);
+        $nodes = $this->parser->parse($code);
+        $output->page($this->presenter->present($nodes, $depth));
 
         $this->context->setReturnValue($nodes);
 
         return 0;
-    }
-
-    private function parseErrorIsEOF(PhpParserError $e): bool
-    {
-        $msg = $e->getRawMessage();
-
-        return ($msg === 'Unexpected token EOF') || (\strpos($msg, 'Syntax error, unexpected EOF') !== false);
     }
 }

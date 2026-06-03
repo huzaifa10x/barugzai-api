@@ -3,7 +3,7 @@
 /*
  * This file is part of Psy Shell.
  *
- * (c) 2012-2026 Justin Hileman
+ * (c) 2012-2023 Justin Hileman
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -27,14 +27,13 @@ class TimeitCommand extends Command
     const RESULT_MSG = '<info>Command took %.6f seconds to complete.</info>';
     const AVG_RESULT_MSG = '<info>Command took %.6f seconds on average (%.6f median; %.6f total) to complete.</info>';
 
-    // All times stored as nanoseconds (int on 64-bit, float on 32-bit overflow)
-    /** @var int|float|null */
+    // All times stored as nanoseconds!
     private static $start = null;
-    private static array $times = [];
+    private static $times = [];
 
-    private CodeArgumentParser $parser;
-    private NodeTraverser $traverser;
-    private Printer $printer;
+    private $parser;
+    private $traverser;
+    private $printer;
 
     /**
      * {@inheritdoc}
@@ -55,7 +54,7 @@ class TimeitCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure(): void
+    protected function configure()
     {
         $this
             ->setName('timeit')
@@ -84,15 +83,14 @@ HELP
     {
         $code = $input->getArgument('code');
         $num = (int) ($input->getOption('num') ?: 1);
-
-        $shell = $this->getShell();
+        $shell = $this->getApplication();
 
         $instrumentedCode = $this->instrumentCode($code);
 
         self::$times = [];
 
         do {
-            $_ = $shell->execute($instrumentedCode, true);
+            $_ = $shell->execute($instrumentedCode);
             $this->ensureEndMarked();
         } while (\count(self::$times) < $num);
 
@@ -102,13 +100,11 @@ HELP
         self::$times = [];
 
         if ($num === 1) {
-            // @phpstan-ignore-next-line offsetAccess.nonOffsetAccessible (guaranteed by loop: count($times) >= $num)
             $output->writeln(\sprintf(self::RESULT_MSG, $times[0] / 1e+9));
         } else {
             $total = \array_sum($times);
             \rsort($times);
-            // @phpstan-ignore-next-line offsetAccess.nonOffsetAccessible (guaranteed by loop: count($times) >= $num)
-            $median = $times[(int) \round($num / 2)];
+            $median = $times[\round($num / 2)];
 
             $output->writeln(\sprintf(self::AVG_RESULT_MSG, ($total / $num) / 1e+9, $median / 1e+9, $total / 1e+9));
         }
